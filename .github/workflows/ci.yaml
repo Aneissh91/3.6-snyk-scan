@@ -13,6 +13,8 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # Package your Lambda handler into a zip
+      # 👉 IMPORTANT: adjust the path if index.js is inside a folder
       - name: Package Lambda
         run: zip lambda.zip index.js
 
@@ -45,6 +47,7 @@ jobs:
       - name: Install Snyk
         run: npm install -g snyk
 
+      # IaC scan for Terraform
       - name: Run Snyk IaC Test
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
