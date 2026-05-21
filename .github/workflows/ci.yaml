@@ -6,18 +6,20 @@ on:
   pull_request:
     branches: ["main"]
 
-jobs: # 👈 This line is critical
+jobs:
   terraform-checks:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4 # updated version
+        uses: actions/checkout@v4 # latest version
 
       - name: Package Lambda
-        run: zip lambda.zip index.js
+        run: |
+          cd 3.6-snyk-scan
+          zip lambda.zip index.js
 
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3 # updated version
+        uses: hashicorp/setup-terraform@v3 # latest version
 
       - name: Terraform Init
         run: terraform init
@@ -35,20 +37,20 @@ jobs: # 👈 This line is critical
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4 # updated version
+        uses: actions/checkout@v4 # latest version
 
       - name: Setup Node
-        uses: actions/setup-node@v4 # updated version
+        uses: actions/setup-node@v4 # latest version
         with:
           node-version: 18
 
       - name: Install Snyk
         run: npm install -g snyk
 
-      - name: Run Snyk Test
+      - name: Run Snyk IaC Test
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        run: snyk test
+        run: snyk iac test --file=main.tf
 
       - name: Run Snyk Monitor
         env:
