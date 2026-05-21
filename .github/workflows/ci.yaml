@@ -9,6 +9,8 @@ on:
 jobs:
   terraform-checks:
     runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -16,13 +18,13 @@ jobs:
       # Package your Lambda handler into a zip
       - name: Package Lambda
         run: |
-          cd 3.6-SNYK-SCAN
+          cd 3.6-snyk-scan
           zip lambda.zip index.js
 
       # Verify the zip contents
       - name: Verify Lambda Zip
         run: |
-          cd 3.6-SNYK-SCAN
+          cd 3.6-snyk-scan
           ls -l
           unzip -l lambda.zip
 
@@ -31,12 +33,12 @@ jobs:
 
       - name: Terraform Init
         run: |
-          cd 3.6-SNYK-SCAN
+          cd 3.6-snyk-scan
           terraform init
 
       - name: Terraform Validate
         run: |
-          cd 3.6-SNYK-SCAN
+          cd 3.6-snyk-scan
           terraform validate
 
       - name: Terraform Plan
@@ -44,11 +46,22 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         run: |
-          cd 3.6-SNYK-SCAN
+          cd 3.6-snyk-scan
           terraform plan
+
+      # 🚀 Apply step — actually deploys Lambda to AWS
+      - name: Terraform Apply
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          cd 3.6-snyk-scan
+          terraform apply -auto-approve
 
   snyk-checks:
     runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -66,5 +79,5 @@ jobs:
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         run: |
-          cd 3.6-SNYK-SCAN
+          cd 3.6-snyk-scan
           snyk iac test --file=main.tf
