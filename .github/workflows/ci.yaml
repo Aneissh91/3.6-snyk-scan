@@ -1,23 +1,56 @@
-terraform-checks:
-  runs-on: ubuntu-latest
-  steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4 # updated version
+name: CI
 
-    - name: Package Lambda
-      run: zip lambda.zip index.js
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
 
-    - name: Setup Terraform
-      uses: hashicorp/setup-terraform@v3 # updated version
+jobs: # 👈 This line is critical
+  terraform-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4 # updated version
 
-    - name: Terraform Init
-      run: terraform init
+      - name: Package Lambda
+        run: zip lambda.zip index.js
 
-    - name: Terraform Validate
-      run: terraform validate
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3 # updated version
 
-    - name: Terraform Plan
-      env:
-        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      run: terraform plan
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Validate
+        run: terraform validate
+
+      - name: Terraform Plan
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: terraform plan
+
+  snyk-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4 # updated version
+
+      - name: Setup Node
+        uses: actions/setup-node@v4 # updated version
+        with:
+          node-version: 18
+
+      - name: Install Snyk
+        run: npm install -g snyk
+
+      - name: Run Snyk Test
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        run: snyk test
+
+      - name: Run Snyk Monitor
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        run: snyk monitor
