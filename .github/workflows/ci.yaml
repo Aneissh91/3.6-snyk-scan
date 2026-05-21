@@ -14,24 +14,38 @@ jobs:
         uses: actions/checkout@v4
 
       # Package your Lambda handler into a zip
-      # 👉 IMPORTANT: adjust the path if index.js is inside a folder
       - name: Package Lambda
-        run: zip lambda.zip index.js
+        run: |
+          cd 3.6-SNYK-SCAN
+          zip lambda.zip index.js
+
+      # Verify the zip contents
+      - name: Verify Lambda Zip
+        run: |
+          cd 3.6-SNYK-SCAN
+          ls -l
+          unzip -l lambda.zip
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
 
       - name: Terraform Init
-        run: terraform init
+        run: |
+          cd 3.6-SNYK-SCAN
+          terraform init
 
       - name: Terraform Validate
-        run: terraform validate
+        run: |
+          cd 3.6-SNYK-SCAN
+          terraform validate
 
       - name: Terraform Plan
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        run: terraform plan
+        run: |
+          cd 3.6-SNYK-SCAN
+          terraform plan
 
   snyk-checks:
     runs-on: ubuntu-latest
@@ -51,4 +65,6 @@ jobs:
       - name: Run Snyk IaC Test
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        run: snyk iac test --file=main.tf
+        run: |
+          cd 3.6-SNYK-SCAN
+          snyk iac test --file=main.tf
