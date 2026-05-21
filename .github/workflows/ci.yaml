@@ -11,15 +11,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4 # latest version
+        uses: actions/checkout@v4
 
       - name: Package Lambda
-        run: |
-          cd 3.6-snyk-scan
-          zip lambda.zip index.js
+        run: zip lambda.zip index.js
 
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3 # latest version
+        uses: hashicorp/setup-terraform@v3
 
       - name: Terraform Init
         run: terraform init
@@ -37,10 +35,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4 # latest version
+        uses: actions/checkout@v4
 
       - name: Setup Node
-        uses: actions/setup-node@v4 # latest version
+        uses: actions/setup-node@v4
         with:
           node-version: 18
 
@@ -51,8 +49,3 @@ jobs:
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         run: snyk iac test --file=main.tf
-
-      - name: Run Snyk Monitor
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        run: snyk monitor
